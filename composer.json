@@ -1,0 +1,22 @@
+{
+    "name": "pixelion/amo-core",
+    "description": "Amo core",
+    "homepage": "https://github.com/pixelion/amo-core",
+    "type": "yii2-extension",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "PIXELION CMS",
+            "email": "dev@pixelion.com.ua",
+            "homepage": "https://pixelion.com.ua"
+        }
+    ],
+    "require": {
+        "amocrm/amocrm-api-library": "dev-master"
+    },
+    "autoload": {
+        "psr-4": {
+            "Pixelion\\AmoCrm\\": ""
+        }
+    }
+}
