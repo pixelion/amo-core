@@ -9,7 +9,7 @@ use panix\engine\WebModule;
 class Module extends WebModule
 {
 
-    public $icon = 'images';
+    public $icon = 'images1';
 
     public function afterInstall()
     {
