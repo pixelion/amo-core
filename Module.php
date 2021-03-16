@@ -1,6 +1,6 @@
 <?php
 
-namespace panix\mod\banner;
+namespace Pixelion\AmoCrm;
 
 use Yii;
 use panix\engine\Html;
