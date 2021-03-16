@@ -14,8 +14,21 @@ class m210213_092335_amo_leads extends Migration
     {
         $this->createTable('amo_leads', [
             'id' => $this->primaryKey(),
-            'title' => $this->string(12)->notNull()->unique(),
-            'body' => $this->text()
+            'account_id' => $this->integer()->unsigned(),
+            'name' => $this->string(255)->null(),
+            'pipeline_id' => $this->integer()->unsigned(),
+            'status_id' => $this->integer()->unsigned(),
+            'old_status_id' => $this->integer()->unsigned(),
+            'responsible_user_id' => $this->integer()->unsigned(),
+            'created_user_id' => $this->integer()->unsigned(),
+            'modified_user_id' => $this->integer()->unsigned(),
+
+
+            'price' => $this->integer()->unsigned(),
+
+
+            'created_at' => $this->integer(),
+            'updated_at' => $this->integer(),
         ]);
     }
 

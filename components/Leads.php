@@ -4,7 +4,7 @@ namespace Pixelion\AmoCrm\components;
 
 use Yii;
 
-class Task extends AmoCore
+class Leads extends AmoCore
 {
     protected $data = [];
     private $action;

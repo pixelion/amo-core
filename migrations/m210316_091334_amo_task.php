@@ -17,6 +17,7 @@ class m210316_091334_amo_task extends Migration
             'element_id' => $this->integer()->unsigned(),
             'account_id' => $this->integer()->unsigned(),
             'created_user_id' => $this->integer()->unsigned(),
+            'responsible_user_id' => $this->integer()->unsigned(),
             'text' => $this->text(),
             'old_text' => $this->text(),
             'task_type' => $this->integer(),
