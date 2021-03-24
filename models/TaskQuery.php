@@ -1,6 +1,6 @@
 <?php
 
-namespace panix\mod\user\models;
+namespace Pixelion\AmoCrm\models;
 
 use Yii;
 use yii\db\ActiveQuery;
@@ -14,7 +14,7 @@ use panix\mod\shop\models\ProductCategoryRef;
 class TaskQuery extends ActiveQuery
 {
 
-    use DefaultQueryTrait;
+   // use DefaultQueryTrait;
 
 
 

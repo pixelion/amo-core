@@ -1,0 +1,35 @@
+<?php
+
+namespace Pixelion\AmoCrm\models;
+
+use Yii;
+use yii\db\ActiveRecord;
+use yii\helpers\Json;
+
+
+/**
+ * This is the model class for table "tbl_user".
+ *
+ * @property string $id
+ * @property string $role
+ */
+class Token extends ActiveRecord
+{
+
+
+
+    /**
+     * @inheritdoc
+     */
+    public static function tableName()
+    {
+        return "{{%amo_tokens}}";
+    }
+
+
+    public static function find()
+    {
+        return new TaskQuery(get_called_class());
+    }
+
+}

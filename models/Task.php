@@ -4,6 +4,7 @@ namespace Pixelion\AmoCrm\models;
 
 use Yii;
 use yii\db\ActiveRecord;
+use yii\helpers\Json;
 
 
 /**
@@ -15,204 +16,104 @@ use yii\db\ActiveRecord;
 class Task extends ActiveRecord
 {
 
+    public $action;
 
     /**
      * @inheritdoc
      */
     public static function tableName()
     {
-        return "{{%amo_task}}";
+        return "{{%amo_account_task}}";
     }
 
-
-    /**
-     * @inheritdoc
-     */
-    public function rules()
+    public function setAttributes($values, $safeOnly = true)
     {
-        // set initial rules
+        if (isset($values['id'])) {
+            $values['task_id'] = $values['id'];
+            unset($values['id']);
 
-        $pr = $this->agreement();
-        $rules = [];
-        if ($pr) {
-            $rules[] = ['agreement', 'required', 'requiredValue' => 1, 'message' => self::t('AGREEMENT_MESSAGE'), 'on' => 'register'];
-            $rules[] = ['agreement', 'boolean', 'on' => 'register'];
-        }
-        $rules[] = ['subscribe', 'boolean'];
-        // $rules = [
-        $rules[] = [['image'], 'file', 'skipOnEmpty' => true, 'extensions' => ['png', 'jpg']];
-        // general email and username rules
-        $rules[] = [['email', 'username', 'phone', 'first_name', 'last_name', 'middle_name'], 'string', 'max' => 50];
-        $rules[] = [['email', 'username'], 'unique'];
-        $rules[] = [['email', 'username'], 'filter', 'filter' => 'trim'];
-        $rules[] = [['email'], 'email'];
-        $rules[] = ['image', 'file'];
-        $rules[] = ['birthday', 'date', 'format' => 'php:Y-m-d'];
-        $rules[] = ['new_password', 'string', 'min' => 4, 'on' => ['reset', 'change']];
-        $rules[] = [['image', 'city', 'instagram_url', 'facebook_url'], 'default'];
-        $rules[] = [['instagram_url', 'facebook_url'], 'url'];
-        // [['username'], 'match', 'pattern' => '/^[A-Za-z0-9_]+$/u', 'message' => Yii::t('user/default', '{attribute} can contain only letters, numbers, and "_"')],
-        // password rules
-        //[['newPassword'], 'string', 'min' => 3],
-        //[['newPassword'], 'filter', 'filter' => 'trim'],
-        $rules[] = [['new_password'], 'required', 'on' => ['reset', 'change']];
-        $rules[] = [['password_confirm'], 'required', 'on' => ['register', 'create_user']];
-        $rules[] = [['city'], 'string'];
-        $rules[] = [['password_confirm', 'password'], 'string', 'min' => 4];
-        $rules[] = [['gender', 'points'], 'integer'];
-        $rules[] = [['password'], 'required', 'on' => ['register', 'create_user']];
-        $rules[] = ['phone', 'panix\ext\telinput\PhoneInputValidator'];
-        //[['password_confirm'], 'compare', 'compareAttribute' => 'new_password', 'message' => Yii::t('user/default', 'Passwords do not match')],
-        $rules[] = [['password_confirm'], 'compare', 'compareAttribute' => 'password', 'message' => Yii::t('user/default', 'PASSWORD_NOT_MATCH'), 'on' => 'register'];
-        // account page
-        $rules[] = [['currentPassword'], 'required', 'on' => ['account']];
-        $rules[] = [['currentPassword'], 'validateCurrentPassword', 'on' => ['account']];
-
-        // admin rules
-        $rules[] = [['ban_time'], 'date', 'format' => 'php:Y-m-d H:i:s', 'on' => ['admin', 'create_user']];
-        $rules[] = [['ban_reason'], 'string', 'max' => 255, 'on' => ['admin', 'create_user']];
-        $rules[] = [['role', 'username', 'status'], 'required', 'on' => ['admin', 'create_user']];
-        //  ];
-
-        // add required rules for email/username depending on module properties
-        $requireFields = ["requireEmail", "requireUsername"];
-        foreach ($requireFields as $requireField) {
-            if (Yii::$app->getModule("user")->$requireField) {
-                $attribute = strtolower(substr($requireField, 7)); // "email" or "username"
-                $rules[] = [$attribute, "required"];
+            if (isset($values['result'])) {
+                $values['result'] = Json::encode($values['result']);
             }
         }
 
-        return $rules;
+        parent::setAttributes($values, $safeOnly);
+
     }
-
-
-
-    public function scenarios()
-    {
-        return ArrayHelper::merge(parent::scenarios(), [
-            'register_fast' => ['username', 'email', 'phone', 'points', 'points_expire'],
-            'register' => ['username', 'email', 'password', 'password_confirm'],
-            'reset' => ['new_password', 'password_confirm'],
-            'admin' => ['role', 'username', 'points', 'points_expire'],
-        ]);
-    }
-
-    /**
-     * Validate current password (account page)
-     */
-    public function validateCurrentPassword()
-    {
-        if (!$this->verifyPassword($this->currentPassword)) {
-            $this->addError("currentPassword", "Current password incorrect");
-        }
-    }
-
-
-    public function behaviors()
-    {
-        $a = [];
-        $a['uploadFile'] = [
-            'class' => '\panix\engine\behaviors\UploadFileBehavior',
-            'files' => [
-                'image' => '@uploads/user',
-            ],
-            'options' => [
-                'watermark' => false
-            ]
-        ];
-        return ArrayHelper::merge($a, parent::behaviors());
-    }
-
-    public function attributeLabels()
-    {
-        return array_merge(parent::attributeLabels(), [
-            'new_password' => self::t('NEW_PASSWORD'),
-            'password_confirm' => self::t('PASSWORD_CONFIRM'),
-            'role' => self::t('ROLE'),
-        ]);
-    }
-
-
 
     public static function find()
     {
         return new TaskQuery(get_called_class());
     }
-    /**
-     * @inheritdoc
-     */
-    public function beforeSave($insert)
-    {
-
-
-        // hash new password if set
-        if ($this->password && $insert) {
-            $this->password = Yii::$app->security->generatePasswordHash($this->password);
-        }
-        if (in_array($this->scenario, ['reset', 'admin'])) {
-
-            if ($this->new_password)
-                $this->password = Yii::$app->security->generatePasswordHash($this->new_password);
-        }
-
-        // convert ban_time checkbox to date
-        if ($this->ban_time) {
-            $this->ban_time = date("Y-m-d H:i:s");
-        }
-
-        // ensure fields are null so they won't get set as empty string
-        $nullAttributes = ["email", "username", "ban_time", "ban_reason"];
-        foreach ($nullAttributes as $nullAttribute) {
-            $this->$nullAttribute = $this->$nullAttribute ? $this->$nullAttribute : null;
-        }
-
-        return parent::beforeSave($insert);
-    }
 
     public function afterSave($insert, $changedAttributes)
     {
-        if ($this->role) {
-            Yii::$app->authManager->revokeAll($this->id);
-            if (is_array($this->role)) {
-                foreach ($this->role as $role) {
-                    Yii::$app->authManager->assign(Yii::$app->authManager->getRole($role), $this->id);
-                }
-            } elseif (is_string($this->role)) {
-                Yii::$app->authManager->assign(Yii::$app->authManager->getRole($this->role), $this->id);
+
+        $params = [];
+        $model = new Timeline();
+        if ($this->action != 'task_delete') {
+
+            $model->element_id = $this->task_id;
+            $model->note_type = $this->task_type;
+            $model->account_id = $this->account_id;
+            $model->responsible_user_id = $this->responsible_user_id;
+            $model->created_user_id = $this->created_user_id;
+            $model->element_type = $this->element_type;
+            $model->created_at = $this->created_at;
+            $model->updated_at = $this->updated_at;
+            $params['text'] = $this->text;
+            $model->action = 'task_add';
+            if ($this->action_close) {
+                $model->action = 'task_complete';
+
             }
-        }
+            $params['result'] = Json::decode($this->result);
+            $model->params = Json::encode($params);
 
-
-        if (Yii::$app->hasModule('mailchimp')) {
-            /** @var \DrewM\MailChimp\MailChimp $mailchimp */
-            $list = Yii::$app->settings->get('mailchimp', 'list_user');
-            if ($list) {
-                $mailchimp = Yii::$app->mailchimp->getClient();
-
-
-                $result = $mailchimp->post('lists/' . $list . '/members', [
-                    //'merge_fields' => [
-                    //    'FNAME' => $fname,
-                    //    'LNAME' => $lname
-                    //],
-                    'email_address' => $this->email,
-                    'status' => 'subscribed',
-                ]);
-
-                if ($mailchimp->success()) {
-                    // $class   = 'alert-success';
-                    // $message = $result['email_address']. ' ' .$result['status'];
-                } else {
-                    // $class   = 'alert-warning';
-                    // $message = $result['title'];
-                }
-            }
-
-
+            $model->save(false);
         }
 
         parent::afterSave($insert, $changedAttributes);
     }
 
+
+    public static function numberToString($value)
+    {
+        $value = explode('.', number_format($value, 2, '.', ''));
+
+        $f = new \NumberFormatter('uk', \NumberFormatter::SPELLOUT);
+        $str = $f->format($value[0]);
+
+        // Первую букву в верхний регистр.
+        $str = mb_strtoupper(mb_substr($str, 0, 1)) . mb_substr($str, 1, mb_strlen($str));
+
+        // Склонение слова "рубль".
+        $num = $value[0] % 100;
+        if ($num > 19) {
+            $num = $num % 10;
+        }
+        switch ($num) {
+            case 1:
+                $currency = 'гривня';
+                break;
+            case 2:
+            case 3:
+            case 4:
+                $currency = 'гривні';
+                break;
+            default:
+                $currency = 'гривень';
+        }
+
+
+        /*switch ($num) {
+            case 1: $currency = 'рубль'; break;
+            case 2:
+            case 3:
+            case 4: $currency = 'рубля'; break;
+            default: $currency = 'рублей';
+        }*/
+
+        return $str . ' ' . $currency . ' ' . $value[1] . ' копеек.';
+    }
 }

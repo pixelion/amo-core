@@ -5,13 +5,14 @@ namespace Pixelion\AmoCrm\components;
 use Pixelion\AmoCrm\models\Timeline;
 use Yii;
 
-class Task extends AmoCore
+class Message extends AmoCore
 {
     protected $data = [];
     private $action;
 
     public function __construct($post)
     {
+        file_put_contents(Yii::getAlias('@runtime/crm/') . 'message.json', json_encode($post, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
 
         if (isset($post)) {
             if (isset($post['update'])) {
@@ -26,12 +27,14 @@ class Task extends AmoCore
             } else {
 
 
-                file_put_contents(Yii::getAlias('@runtime/crm/') . 'none.json', json_encode($post, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+                file_put_contents(Yii::getAlias('@runtime/crm/') . 'message.json', json_encode($post, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
 
             }
 
             // file_put_contents(Yii::getAlias('@runtime/crm/') . 'test1.json', array_keys($post));
 
+
+        }else{
 
         }
 
@@ -41,18 +44,19 @@ class Task extends AmoCore
     {
         foreach ($this->data as $data){
             $model = new Timeline();
-            $model->element_id = $data['element_id'];
+            $model->element_id = $data['id'];
             $model->account_id = $data['account_id'];
             $model->responsible_user_id = $data['responsible_user_id'];
             $model->created_user_id = $data['created_user_id'];
-            $model->result = $data['text'];
+            $model->modified_user_id = $data['modified_user_id'];
             $model->created_at = $data['created_at'];
             $model->updated_at = $data['updated_at'];
-            $model->action = 'task_update';
+            $model->action = 'message_update';
+            $model->result = 'Изменен контакт';
             $model->save(false);
         }
 
-        file_put_contents(Yii::getAlias('@runtime/crm/') . 'task_update.json', json_encode($this->data, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+        file_put_contents(Yii::getAlias('@runtime/crm/') . 'message_update.json', json_encode($this->data, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
 
     }
 
@@ -60,23 +64,23 @@ class Task extends AmoCore
     {
         foreach ($this->data as $data){
             $model = new Timeline();
-            $model->element_id = $data['element_id'];
+            $model->element_id = $data['id'];
             $model->account_id = $data['account_id'];
             $model->responsible_user_id = $data['responsible_user_id'];
             $model->created_user_id = $data['created_user_id'];
             $model->result = $data['text'];
             $model->created_at = $data['created_at'];
-            $model->updated_at = $data['updated_at'];
-            $model->action = 'task_add';
+           // $model->updated_at = $data['updated_at'];
+            $model->action = 'message_add';
             $model->save(false);
         }
-        file_put_contents(Yii::getAlias('@runtime/crm/') . 'task_add.json', json_encode($this->data, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+        file_put_contents(Yii::getAlias('@runtime/crm/') . 'message_add.json', json_encode($this->data, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
 
     }
 
     private function delete()
     {
-        foreach ($this->data as $data){
+        /*foreach ($this->data as $data){
             $model = Timeline::findOne(1);
             $model->account_id = $data['id'];
             $model->responsible_user_id = $data['responsible_user_id'];
@@ -85,8 +89,8 @@ class Task extends AmoCore
             $model->updated_at = $data['updated_at'];
             $model->action = 'task_delete';
             $model->save(false);
-        }
-        file_put_contents(Yii::getAlias('@runtime/crm/') . 'task_delete.json', json_encode($this->data, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+        }*/
+        file_put_contents(Yii::getAlias('@runtime/crm/') . 'message_delete.json', json_encode($this->data, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
 
     }
 }
